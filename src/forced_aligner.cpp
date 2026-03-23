@@ -1,5 +1,6 @@
 #include "forced_aligner.h"
 #include "mel_spectrogram.h"
+#include "ggml-cpu.h"
 
 #include <cstdio>
 #include <cstring>
@@ -131,6 +132,8 @@ bool ForcedAligner::load_model(const std::string & model_path) {
         error_msg_ = "Failed to create backend scheduler";
         return false;
     }
+
+    set_n_threads(n_threads_);
     
     state_.compute_meta.resize(ggml_tensor_overhead() * QWEN3_FA_MAX_NODES + ggml_graph_overhead());
 

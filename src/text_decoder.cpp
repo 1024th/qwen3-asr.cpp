@@ -1,5 +1,6 @@
 #include "text_decoder.h"
 #include "timing.h"
+#include "ggml-cpu.h"
 
 #include <cmath>
 #include <cstring>
@@ -111,6 +112,8 @@ bool TextDecoder::load_model(const std::string & model_path) {
         error_msg_ = "Failed to create backend scheduler";
         return false;
     }
+
+    set_n_threads(n_threads_);
     
     state_.compute_meta.resize(ggml_tensor_overhead() * QWEN3_ASR_MAX_NODES + ggml_graph_overhead());
 

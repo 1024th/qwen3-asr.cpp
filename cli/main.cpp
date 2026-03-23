@@ -539,6 +539,12 @@ static int run_transcribe_and_align(const cli_params & params) {
     int64_t total_align_ms = 0;
 
     std::string global_lang = normalize_language_name(params.language);
+    if (global_lang == "korean") {
+        std::string dict_path = find_korean_dict(params.aligner_model_path);
+        if (!dict_path.empty()) {
+            aligner.load_korean_dict(dict_path);
+        }
+    }
 
     for (int c = 0; c < n_chunks; ++c) {
         int start = c * chunk_stride_samples;
