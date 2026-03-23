@@ -216,9 +216,46 @@ static std::string detect_language(const std::string & asr_language_token) {
 }
 
 static std::string extract_transcript(const std::string & asr_text) {
-    // Qwen3 ASR text doesn't have "language " prefix in the text itself.
-    // It's just the raw transcript.
-    return asr_text;
+    const std::string prefix = "language ";
+    if (asr_text.size() < prefix.size() || asr_text.compare(0, prefix.size(), prefix) != 0) {
+        if (asr_text.rfind("<asr_text>", 0) == 0) {
+            return asr_text.substr(sizeof("<asr_text>") - 1);
+        }
+        return asr_text;
+    }
+
+    size_t pos = prefix.size();
+    if (pos >= asr_text.size()) {
+        return "";
+    }
+
+    unsigned char first = static_cast<unsigned char>(asr_text[pos]);
+    if (!std::isupper(first)) {
+        return asr_text;
+    }
+
+    ++pos;
+    while (pos < asr_text.size()) {
+        unsigned char c = static_cast<unsigned char>(asr_text[pos]);
+        if (!std::islower(c)) {
+            break;
+        }
+        ++pos;
+    }
+
+    while (pos < asr_text.size()) {
+        unsigned char c = static_cast<unsigned char>(asr_text[pos]);
+        if (c >= 0x80 || !std::isspace(c)) {
+            break;
+        }
+        ++pos;
+    }
+
+    std::string transcript = asr_text.substr(pos);
+    if (transcript.rfind("<asr_text>", 0) == 0) {
+        transcript.erase(0, sizeof("<asr_text>") - 1);
+    }
+    return transcript;
 }
 
 static std::string escape_json_string(const std::string & s) {
