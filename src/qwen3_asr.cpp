@@ -82,6 +82,9 @@ transcribe_result Qwen3ASR::transcribe_internal(const float * samples, int n_sam
                                                  const transcribe_params & params) {
     transcribe_result result;
     int64_t t_total_start = get_time_ms();
+
+    encoder_.set_n_threads(params.n_threads);
+    decoder_.set_n_threads(params.n_threads);
     
     int64_t t_mel_start = get_time_ms();
     MelSpectrogram mel;

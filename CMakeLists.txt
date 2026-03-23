@@ -27,6 +27,7 @@ elseif(MSVC)
         "$<$<COMPILE_LANGUAGE:CXX>:/utf-8>"
         "$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/utf-8>"
     )
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS NOMINMAX)
 endif()
 
 # Timing instrumentation option
@@ -181,6 +182,7 @@ install(FILES
     src/audio_encoder.h
     src/gguf_loader.h
     src/mel_spectrogram.h
+    src/platform_mmap.h
     src/qwen3asr_win_export.h
     src/text_decoder.h
     src/timing.h

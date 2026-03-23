@@ -5,6 +5,7 @@
 #include <cstring>
 #include <algorithm>
 #include <ggml-impl.h>
+#include <ggml-cpu.h>
 
 #define QWEN3_ASR_MAX_NODES 4096
 
@@ -38,6 +39,13 @@ AudioEncoder::~AudioEncoder() {
         state_.backend_cpu = nullptr;
     }
     free_model(model_);
+}
+
+void AudioEncoder::set_n_threads(int n_threads) {
+    n_threads_ = std::max(1, n_threads);
+    if (state_.backend_cpu) {
+        ggml_backend_cpu_set_n_threads(state_.backend_cpu, n_threads_);
+    }
 }
 
 bool AudioEncoder::load_model(const std::string & model_path) {
@@ -79,6 +87,8 @@ bool AudioEncoder::load_model(const std::string & model_path) {
     }
     
     state_.compute_meta.resize(ggml_tensor_overhead() * QWEN3_ASR_MAX_NODES + ggml_graph_overhead());
+
+    set_n_threads(n_threads_);
     
     return true;
 }
