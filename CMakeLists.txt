@@ -27,6 +27,7 @@ elseif(MSVC)
         "$<$<COMPILE_LANGUAGE:CXX>:/utf-8>"
         "$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/utf-8>"
     )
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS NOMINMAX)
 endif()
 
 # Timing instrumentation option
@@ -99,6 +100,7 @@ if (QWEN3_ASR_TEST)
     target_link_libraries(qwen3asr-test PRIVATE qwen3-asr ggml Threads::Threads)
 
     # unit test
+    enable_testing()
     add_executable(test_attention_compare tests/test_attention_compare.cpp)
     add_executable(test_conv1 tests/test_conv1.cpp)
     add_executable(test_conv2d tests/test_conv2d.cpp)
@@ -121,6 +123,7 @@ if (QWEN3_ASR_TEST)
     add_executable(test_mel tests/test_mel.cpp)
     add_executable(test_mel_load tests/test_mel_load.cpp)
     add_executable(test_qk_compare tests/test_qk_compare.cpp)
+    add_executable(test_tokenization tests/test_tokenization.cpp)
 
     target_include_directories(test_attention_compare PRIVATE ggml/include include src)
     target_include_directories(test_conv1 PRIVATE ggml/include include src)
@@ -144,6 +147,7 @@ if (QWEN3_ASR_TEST)
     target_include_directories(test_mel PRIVATE ggml/include include src)
     target_include_directories(test_mel_load PRIVATE ggml/include include src)
     target_include_directories(test_qk_compare PRIVATE ggml/include include src)
+    target_include_directories(test_tokenization PRIVATE ggml/include include src)
 
     target_link_libraries(test_attention_compare PRIVATE qwen3-asr ggml Threads::Threads)
     target_link_libraries(test_conv1 PRIVATE qwen3-asr ggml Threads::Threads)
@@ -167,6 +171,9 @@ if (QWEN3_ASR_TEST)
     target_link_libraries(test_mel PRIVATE qwen3-asr ggml Threads::Threads)
     target_link_libraries(test_mel_load PRIVATE qwen3-asr ggml Threads::Threads)
     target_link_libraries(test_qk_compare PRIVATE qwen3-asr ggml Threads::Threads)
+    target_link_libraries(test_tokenization PRIVATE qwen3-asr ggml Threads::Threads)
+
+    add_test(NAME test_tokenization COMMAND test_tokenization)
 endif ()
 
 install(TARGETS qwen3-asr qwen3-asr-cli
@@ -181,6 +188,7 @@ install(FILES
     src/audio_encoder.h
     src/gguf_loader.h
     src/mel_spectrogram.h
+    src/platform_mmap.h
     src/qwen3asr_win_export.h
     src/text_decoder.h
     src/timing.h
