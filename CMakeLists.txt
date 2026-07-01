@@ -15,7 +15,6 @@ option(GGML_AVX2 "ggml: enable AVX2" ON)
 option(GGML_FMA "ggml: enable FMA" ON)
 option(GGML_F16C "ggml: enable F16c" ON)
 option(GGML_VULKAN "ggml: enable Vulkan backend" OFF)
-option(GGML_METAL "ggml: enable Metal backend" OFF)
 
 # Compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -68,14 +67,14 @@ if (APPLE)
     target_link_libraries(qwen3-asr PRIVATE "-framework Accelerate")
 endif ()
 
-target_include_directories(qwen3-asr PRIVATE
+target_include_directories(qwen3-asr PUBLIC
         ggml/include
-        ggml/src
         include
         src
 )
+target_include_directories(qwen3-asr PRIVATE ggml/src)
 
-target_link_libraries(qwen3-asr PRIVATE ggml Threads::Threads)
+target_link_libraries(qwen3-asr PUBLIC ggml PRIVATE Threads::Threads)
 
 # ==================================== CLI ====================================
 add_executable(qwen3-asr-cli
@@ -169,3 +168,21 @@ if (QWEN3_ASR_TEST)
     target_link_libraries(test_mel_load PRIVATE qwen3-asr ggml Threads::Threads)
     target_link_libraries(test_qk_compare PRIVATE qwen3-asr ggml Threads::Threads)
 endif ()
+
+install(TARGETS qwen3-asr qwen3-asr-cli
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+install(FILES
+    include/audio_injection.h
+    include/forced_aligner.h
+    include/qwen3_asr.h
+    src/audio_encoder.h
+    src/gguf_loader.h
+    src/mel_spectrogram.h
+    src/qwen3asr_win_export.h
+    src/text_decoder.h
+    src/timing.h
+    DESTINATION include
+)
