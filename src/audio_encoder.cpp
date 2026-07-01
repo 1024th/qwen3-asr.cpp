@@ -1,6 +1,5 @@
 #include "audio_encoder.h"
 #include "timing.h"
-#include "ggml-cpu.h"
 
 #include <cmath>
 #include <cstring>
@@ -87,8 +86,6 @@ bool AudioEncoder::load_model(const std::string & model_path) {
         return false;
     }
 
-    set_n_threads(n_threads_);
-    
     state_.compute_meta.resize(ggml_tensor_overhead() * QWEN3_ASR_MAX_NODES + ggml_graph_overhead());
 
     set_n_threads(n_threads_);

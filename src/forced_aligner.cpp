@@ -1,6 +1,5 @@
 #include "forced_aligner.h"
 #include "mel_spectrogram.h"
-#include "ggml-cpu.h"
 
 #include <cstdio>
 #include <cstring>
@@ -133,8 +132,6 @@ bool ForcedAligner::load_model(const std::string & model_path) {
         return false;
     }
 
-    set_n_threads(n_threads_);
-    
     state_.compute_meta.resize(ggml_tensor_overhead() * QWEN3_FA_MAX_NODES + ggml_graph_overhead());
 
     set_n_threads(n_threads_);
@@ -1593,14 +1590,28 @@ static std::vector<std::string> tokenize_whitespace_words(const std::string & te
 }
 
 static std::vector<std::string> tokenize_cjk_chars(const std::string & text) {
-    std::vector<std::string> chars;
-    const std::vector<std::string> units = split_utf8_chars(text);
-    for (const auto & unit : units) {
-        if (!is_utf8_whitespace_char(unit)) {
-            chars.push_back(unit);
+    std::vector<std::string> words;
+    std::string word;
+    for (const auto & unit : split_utf8_chars(text)) {
+        if (is_utf8_whitespace_char(unit)) {
+            if (!word.empty()) {
+                words.push_back(word);
+                word.clear();
+            }
+        } else if (utf8_char_is_cjk(unit)) {
+            if (!word.empty()) {
+                words.push_back(word);
+                word.clear();
+            }
+            words.push_back(unit);
+        } else {
+            word += unit;
         }
     }
-    return chars;
+    if (!word.empty()) {
+        words.push_back(word);
+    }
+    return words;
 }
 
 std::vector<std::string> tokenize_korean(const std::string & text,
